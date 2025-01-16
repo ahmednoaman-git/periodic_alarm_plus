@@ -24,13 +24,11 @@ class AndroidAlarm {
   static Future<void> init() => AndroidAlarmManager.initialize();
   static final audioPlayer = AudioPlayer();
 
-  static const platform =
-      MethodChannel('com.cagridurmus.periodic_alarm/notifOnAppKill');
+  static const platform = MethodChannel('com.ahmednoaman.periodic_alarm_plus/notifOnAppKill');
 
   static bool get hasAnotherAlarm => AlarmStorage.getSavedAlarms().length > 1;
 
-  static Future<bool> setOneAlarm(
-      AlarmModel alarmModel, void Function()? onRing) async {
+  static Future<bool> setOneAlarm(AlarmModel alarmModel, void Function()? onRing) async {
     try {
       final ReceivePort port = ReceivePort();
       final success = IsolateNameServer.registerPortWithName(
@@ -40,8 +38,7 @@ class AndroidAlarm {
 
       if (!success) {
         IsolateNameServer.removePortNameMapping("$ringPort-${alarmModel.id}");
-        IsolateNameServer.registerPortWithName(
-            port.sendPort, "$ringPort-${alarmModel.id}");
+        IsolateNameServer.registerPortWithName(port.sendPort, "$ringPort-${alarmModel.id}");
       }
       port.listen((message) {
         debugPrint('[Alarm] $message');
@@ -66,8 +63,7 @@ class AndroidAlarm {
         debugPrint('[Alarm] NotificationOnKillService error: $e');
       }
     }
-    final res = await AndroidAlarmManager.oneShotAt(
-        alarmModel.dateTime, alarmModel.id, AndroidAlarm.playAlarm,
+    final res = await AndroidAlarmManager.oneShotAt(alarmModel.dateTime, alarmModel.id, AndroidAlarm.playAlarm,
         alarmClock: true,
         allowWhileIdle: true,
         exact: true,
@@ -75,16 +71,14 @@ class AndroidAlarm {
         rescheduleOnReboot: true,
         params: alarmModel.toJson());
 
-    debugPrint(res
-        ? '${alarmModel.dateTime} ve ${alarmModel.id} li tek seferlik alarm oluşturuldu.'
-        : 'Oluşturulamadı');
+    debugPrint(
+        res ? '${alarmModel.dateTime} ve ${alarmModel.id} li tek seferlik alarm oluşturuldu.' : 'Oluşturulamadı');
 
     if (res &&
             alarmModel.notificationTitle != null &&
             alarmModel.notificationTitle!.isNotEmpty &&
             alarmModel.notificationBody != null &&
-            alarmModel
-                .notificationBody!.isNotEmpty /* &&
+            alarmModel.notificationBody!.isNotEmpty /* &&
         alarmModel.active*/
         ) {
       await AlarmNotification.instance.scheduleAlarmNotif(
@@ -97,8 +91,7 @@ class AndroidAlarm {
     return res;
   }
 
-  static Future<bool> setPeriodicAlarm(
-      AlarmModel alarmModel, void Function()? onRing) async {
+  static Future<bool> setPeriodicAlarm(AlarmModel alarmModel, void Function()? onRing) async {
     try {
       final ReceivePort port = ReceivePort();
       final success = IsolateNameServer.registerPortWithName(
@@ -108,8 +101,7 @@ class AndroidAlarm {
 
       if (!success) {
         IsolateNameServer.removePortNameMapping("$ringPort-${alarmModel.id}");
-        IsolateNameServer.registerPortWithName(
-            port.sendPort, "$ringPort-${alarmModel.id}");
+        IsolateNameServer.registerPortWithName(port.sendPort, "$ringPort-${alarmModel.id}");
       }
       port.listen((message) {
         debugPrint('[Alarm] $message');
@@ -135,8 +127,7 @@ class AndroidAlarm {
       }
     }
 
-    final res = await AndroidAlarmManager.oneShotAt(
-        alarmModel.dateTime, alarmModel.id, AndroidAlarm.playAlarm1,
+    final res = await AndroidAlarmManager.oneShotAt(alarmModel.dateTime, alarmModel.id, AndroidAlarm.playAlarm1,
         alarmClock: true,
         allowWhileIdle: true,
         exact: true,
@@ -144,9 +135,7 @@ class AndroidAlarm {
         rescheduleOnReboot: true,
         params: alarmModel.toJson());
 
-    debugPrint(res
-        ? '${alarmModel.dateTime} ve ${alarmModel.id} li periodic alarm oluşturuldu.'
-        : 'Oluşturulamadı');
+    debugPrint(res ? '${alarmModel.dateTime} ve ${alarmModel.id} li periodic alarm oluşturuldu.' : 'Oluşturulamadı');
 
     if (res &&
             alarmModel.notificationTitle != null &&
@@ -227,14 +216,11 @@ class AndroidAlarm {
             // counter++;
             if (audioPlayer.volume < alarmModel.incMusicVolume) {
               volume = audioPlayer.volume +
-                  (alarmModel.incMusicVolume * timerDurationSeconds) /
-                      (alarmModel.incMusicTime * secondsToMinutes);
+                  (alarmModel.incMusicVolume * timerDurationSeconds) / (alarmModel.incMusicTime * secondsToMinutes);
             } else {
               volume = audioPlayer.volume +
-                  ((alarmModel.musicVolume - alarmModel.incMusicVolume) *
-                          timerDurationSeconds) /
-                      ((alarmModel.musicTime - alarmModel.incMusicTime) *
-                          secondsToMinutes);
+                  ((alarmModel.musicVolume - alarmModel.incMusicVolume) * timerDurationSeconds) /
+                      ((alarmModel.musicTime - alarmModel.incMusicTime) * secondsToMinutes);
             }
             if (volume > 1.0) {
               volume = 1.0;
@@ -259,13 +245,11 @@ class AndroidAlarm {
 
     try {
       final ReceivePort port = ReceivePort();
-      final success = IsolateNameServer.registerPortWithName(
-          port.sendPort, "$stopPort-${alarmModel.id}");
+      final success = IsolateNameServer.registerPortWithName(port.sendPort, "$stopPort-${alarmModel.id}");
 
       if (!success) {
         IsolateNameServer.removePortNameMapping("$stopPort-${alarmModel.id}");
-        IsolateNameServer.registerPortWithName(
-            port.sendPort, "$stopPort-${alarmModel.id}");
+        IsolateNameServer.registerPortWithName(port.sendPort, "$stopPort-${alarmModel.id}");
       }
 
       port.listen(
@@ -298,13 +282,11 @@ class AndroidAlarm {
       List<String> isRingingAlarms = await AlarmStorage.getAlarmRinging();
 
       if (isRingingAlarms.length <= 1) {
-        final SendPort send =
-            IsolateNameServer.lookupPortByName("$stopPort-$id")!;
+        final SendPort send = IsolateNameServer.lookupPortByName("$stopPort-$id")!;
         send.send('stop');
       } else {
         for (int i = 0; i <= isRingingAlarms.length - 1; i++) {
-          final SendPort send = IsolateNameServer.lookupPortByName(
-              "$stopPort-${isRingingAlarms[i]}")!;
+          final SendPort send = IsolateNameServer.lookupPortByName("$stopPort-${isRingingAlarms[i]}")!;
           send.send('stop');
         }
       }
