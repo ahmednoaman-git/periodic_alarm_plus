@@ -226,6 +226,7 @@ class AndroidAlarm {
               volume = 1.0;
             }
 
+            VolumeController.instance.showSystemUI = false;
             VolumeController.instance.setVolume(volume);
 
             audioPlayer.setVolume(volume);
